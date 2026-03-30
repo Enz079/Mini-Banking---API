@@ -5,21 +5,21 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/controllers/AlunniController.php';
+require __DIR__ . '/controllers/AccountsController.php';
 
 $app = AppFactory::create();
 
-$app->get('/test', function (Request $request, Response $response, array $args) {
-    $response->getBody()->write("Test page");
-    return $response;
+$app->get('/test', function ($req, $res) {
+    $res->getBody()->write(json_encode(["msg" => "ciao"]));
+    return $res->withHeader('Content-Type', 'application/json');
 });
 
-$app->get('/hello/{name}', function (Request $request, Response $response, array $args) {
-    $name = $args['name'];
-    $response->getBody()->write("Hello, $name");
-    return $response;
-});
+$app->get('/accounts/{id}/transactions', "TransactionsController:list");
 
-$app->get('/alunni', "AlunniController:index");
+$app->get('/accounts/{id}/transactions/{idT}', "TransactionsController:list");
 
-$app->run();
+$app->post('/accounts/{id}/deposits', "TransactionsController:deposit");
+$app->post('/accounts/{id}/withdrawals', "TransactionsController:withdrawal");
+
+$app->put('/accounts/{id}/transactions/{idT}', "TransactionsController:update");
+$app->delete('/accounts/{id}/transactions/{idT}', "TransactionsController:delete");
