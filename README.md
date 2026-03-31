@@ -1,6 +1,6 @@
 1. Schema del Database
 Il database (MySQL/MariaDB) è composto da due tabelle principali per garantire la tracciabilità di ogni operazione
-.
+
 -- Tabella dei conti
 CREATE TABLE accounts (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -21,15 +21,15 @@ CREATE TABLE transactions (
 );
 2. Scelte progettuali
 Calcolo del saldo: Il saldo non è un valore statico. Viene calcolato dinamicamente come differenza tra la somma dei depositi e la somma dei prelievi
-.
+
 Integrità dei dati: I prelievi sono autorizzati solo se l'importo è disponibile (il saldo non può andare in negativo)
-.
+
 Limitazioni PUT: Per preservare lo storico contabile, l'endpoint di modifica agisce solo sul campo description
-.
+
 Integrazione esterna: Utilizzo di Frankfurter per i tassi fiat e Binance Spot API per le quotazioni crypto (con precisione fino a 8 decimali)
-.
+
 Ambiente Docker: Il progetto è predisposto per essere avviato tramite Docker
-.
+
 3. Endpoint e Esempi di Chiamata
 Metodo
 Endpoint
@@ -63,8 +63,7 @@ curl -X GET "http://localhost/accounts/1/balance/convert/fiat?to=USD"
 Conversione in Bitcoin (Crypto):
 curl -X GET "http://localhost/accounts/1/balance/convert/crypto?to=BTC"
 4. Gestione Errori
-L'API risponde con codici standard per garantire chiarezza
-:
+L'API risponde con codici standard per garantire chiarezza:
 400 Bad Request: dati mancanti o formati non validi.
 404 Not Found: donto o movimento inesistente.
 422 Unprocessable entity: violazione regole di business (es. saldo insufficiente per prelievo).
