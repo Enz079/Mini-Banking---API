@@ -1,21 +1,24 @@
 <?php
+
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class TransactionsController
-{
+class TransactionsController{
+
   private function db(){
+    
     return mysqli_connect('my_mariadb', 'root', '', 'bank');
   }
 
   public function list($req, $res, $args){
+    
     $db = $this->db();
     $accountId = (int)$args['id'];
 
     $sql = "SELECT id, type, amount, description, created_at
-        FROM transactions
-        WHERE account_id = ?
-        ORDER BY created_at DESC";
+            FROM transactions
+            WHERE account_id = ?
+            ORDER BY created_at DESC";
 
     $stmt = $db->prepare($sql);
     $stmt->bind_param('i', $accountId);
@@ -32,16 +35,20 @@ class TransactionsController
   }
 
   public function detail($req, $res, $args){
+    
     $db = $this->db();
     $transactionId = (int)$args['idT'];
 
-    $sql = "SELECT * FROM transactions WHERE id = ?";
+    $sql = "SELECT * 
+            FROM transactions 
+            WHERE id = ?";
     $stmt = $db->prepare($sql);
     $stmt->bind_param('i', $transactionId);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
 
     if (!$row) {
+      
       $res->getBody()->write(json_encode(["error" => "Not found"]));
       return $res->withStatus(404)->withHeader('Content-Type', 'application/json');
     }
@@ -51,6 +58,7 @@ class TransactionsController
   }
 
   public function deposit($req, $res, $args){
+    
     $db = $this->db();
     $accountId = (int)$args['id'];
 
@@ -59,6 +67,7 @@ class TransactionsController
     $desc = $data['description'] ?? '';
 
     if ($amount <= 0) {
+      
       $res->getBody()->write(json_encode(["error" => "Invalid amount"]));
       return $res->withStatus(400)->withHeader('Content-Type', 'application/json');
     }
@@ -67,7 +76,7 @@ class TransactionsController
     $newBalance = $balance + $amount;
 
     $sql = "INSERT INTO transactions (account_id, type, amount, description, balance_after)
-        VALUES (?, 'deposit', ?, ?, ?)";
+            VALUES (?, 'deposit', ?, ?, ?)";
 
     $stmt = $db->prepare($sql);
     $stmt->bind_param('idsd', $accountId, $amount, $desc, $newBalance);
@@ -82,6 +91,7 @@ class TransactionsController
   }
 
   public function withdrawal($req, $res, $args){
+    
     $db = $this->db();
     $accountId = (int)$args['id'];
 
@@ -104,7 +114,7 @@ class TransactionsController
     $newBalance = $balance - $amount;
 
     $sql = "INSERT INTO transactions (account_id, type, amount, description, balance_after)
-        VALUES (?, 'withdrawal', ?, ?, ?)";
+            VALUES (?, 'withdrawal', ?, ?, ?)";
 
     $stmt = $db->prepare($sql);
     $stmt->bind_param('idsd', $accountId, $amount, $desc, $newBalance);
@@ -119,13 +129,15 @@ class TransactionsController
   }
 
   public function update($req, $res, $args){
+
     $db = $this->db();
     $transactionId = (int)$args['idT'];
 
     $data = json_decode($req->getBody(), true);
     $desc = $data['description'] ?? '';
 
-    $sql = "UPDATE transactions SET description = ? WHERE id = ?";
+    $sql = "UPDATE transactions SET description = ? 
+            WHERE id = ?";
     $stmt = $db->prepare($sql);
     $stmt->bind_param('si', $desc, $transactionId);
     $stmt->execute();
@@ -135,14 +147,14 @@ class TransactionsController
   }
 
   public function delete($req, $res, $args){
+
     $db = $this->db();
     $accountId = (int)$args['id'];
     $transactionId = (int)$args['idT'];
 
     $sqlLast = "SELECT id FROM transactions
-          WHERE account_id = ?
-          ORDER BY created_at DESC
-          LIMIT 1";
+                WHERE account_id = ?
+                ORDER BY created_at DESC";
 
     $stmt = $db->prepare($sqlLast);
     $stmt->bind_param('i', $accountId);
@@ -150,6 +162,7 @@ class TransactionsController
     $last = $stmt->get_result()->fetch_assoc();
 
     if (!$last || $last['id'] != $transactionId) {
+
       $res->getBody()->write(json_encode(["error" => "Only last transaction can be deleted"]));
       return $res->withStatus(403)->withHeader('Content-Type', 'application/json');
     }
@@ -164,6 +177,7 @@ class TransactionsController
     }
 
     private function getBalance($db, $accountId){
+
       $sql = "SELECT
               COALESCE(SUM(CASE WHEN type='deposit' THEN amount ELSE 0 END),0) -
               COALESCE(SUM(CASE WHEN type='withdrawal' THEN amount ELSE 0 END),0) AS balance

@@ -8,7 +8,6 @@ CREATE TABLE accounts (
 CREATE TABLE transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     account_id INT NOT NULL,
-    type ENUM('deposit', 'withdrawal') NOT NULL,
     amount DECIMAL(15, 2) NOT NULL,
     description TEXT,
     balance_after DECIMAL(15, 2),
